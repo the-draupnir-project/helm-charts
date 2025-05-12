@@ -1,0 +1,391 @@
+# Default values for draupnir.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: gnuxie/draupnir
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsGroup: 1000
+
+securityContext:
+  {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+# This is only required for things like reports
+ingress:
+  enabled: false
+  className: ""
+  annotations:
+    {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Used for the sqlite storage:
+persistence:
+  enabled: false
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 512M
+
+# This is a copy of https://github.com/the-draupnir-project/Draupnir/blob/v2.2.0/config/default.yaml
+# See https://the-draupnir-project.github.io/draupnir-documentation/category/moderators-guide for more information
+# on the configuration options.
+config:
+  # Endpoint URL that Draupnir uses to interact with the matrix homeserver (client-server API),
+  # set this to the pantalaimon URL if you're using that.
+  homeserverUrl: "https://matrix.org"
+
+  # Endpoint URL that Draupnir could use to fetch events related to reports (client-server API and /_synapse/),
+  # only set this to the public-internet homeserver client API URL, do NOT set this to the pantalaimon URL.
+  rawHomeserverUrl: "https://matrix.org"
+
+  # Matrix Access Token to use, Draupnir will only use this if pantalaimon.use is false.
+  # This option can be loaded from a file by passing "--access-token-path <path>" at the command line,
+  # which would allow using secret management systems such as systemd's service credentials.
+  accessToken: "YOUR_TOKEN_HERE"
+
+  # Options related to Pantalaimon (https://github.com/matrix-org/pantalaimon)
+  pantalaimon:
+    # Whether or not Draupnir will use pantalaimon to access the matrix homeserver,
+    # set to `true` if you're using pantalaimon.
+    #
+    # Be sure to point homeserverUrl to the pantalaimon instance.
+    #
+    # Draupnir will log in using the given username and password once,
+    # then store the resulting access token in a file under dataPath.
+    use: false
+
+    # The username to login with.
+    username: draupnir
+
+    # The password Draupnir will login with.
+    #
+    # After successfully logging in once, this will be ignored, so this value can be blanked after first startup.
+    # This option can be loaded from a file by passing "--pantalaimon-password-path <path>" at the command line,
+    # which would allow using secret management systems such as systemd's service credentials.
+    password: your_password
+
+  # Experimental usage of the matrix-bot-sdk rust crypto.
+  # This can not be used with Pantalaimon.
+  # Make sure to setup the bot as if you are not using pantalaimon for this.
+  #
+  # Warning: At this time this is not considered production safe.
+  experimentalRustCrypto: false
+
+  # The path Draupnir will store its state/data in, leave default ("/data/storage") when using containers.
+  dataPath: "/data/storage"
+
+  # If true (the default), Draupnir will only accept invites from users present in managementRoom.
+  autojoinOnlyIfManager: true
+
+  # If `autojoinOnlyIfManager` is false, only the members in this space can invite
+  # the bot to new rooms.
+  acceptInvitesFromSpace: "!example:example.org"
+
+  # Whether Draupnir should report ignored invites to the management room (if autojoinOnlyIfManager is true).
+  recordIgnoredInvites: false
+
+  # The room ID (or room alias) of the management room, anyone in this room can issue commands to Draupnir.
+  #
+  # Draupnir has no more granular access controls other than this, be sure you trust everyone in this room - secure it!
+  #
+  # This should be a room alias or room ID - not a matrix.to URL.
+  #
+  # Note: By default, Draupnir is fairly verbose - expect a lot of messages in this room.
+  # (see verboseLogging to adjust this a bit.)
+  managementRoom: "#moderators:example.org"
+
+  # Deprecated and will be removed in a future version.
+  # Running with verboseLogging is unsupported.
+  # Whether Draupnir should log a lot more messages in the room,
+  # mainly involves "all-OK" messages, and debugging messages for when draupnir checks bans in a room.
+  verboseLogging: false
+
+  # The log level of terminal (or container) output,
+  # can be one of DEBUG, INFO, WARN and ERROR, in increasing order of importance and severity.
+  #
+  # This should be at INFO or DEBUG in order to get support for Draupnir problems.
+  logLevel: "INFO"
+
+  # Whether or not Draupnir should check moderation permissions in all protected rooms on startup.
+  # Equivalent to running `!draupnir verify`.
+  verifyPermissionsOnStartup: true
+
+  # Whether or not Draupnir should actually apply bans and policy lists,
+  # turn on to trial some untrusted configuration or lists.
+  noop: false
+
+  # Whether or not Draupnir should apply `m.room.server_acl` events.
+  # DO NOT change this to `true` unless you are very confident that you know what you are doing.
+  disableServerACL: false
+
+  # A case-insensitive list of ban reasons to have the bot also automatically redact the user's messages for.
+  #
+  # If the bot sees you ban a user with a reason that is an (exact case-insensitive) match to this list,
+  # it will also remove the user's messages automatically.
+  #
+  # Typically this is useful to avoid having to give two commands to the bot.
+  # Advanced: Use asterisks to have the reason match using "globs"
+  # (f.e. "spam*testing" would match "spam for testing" as well as "spamtesting").
+  #
+  # See here for more info: https://www.digitalocean.com/community/tools/glob
+  # Note: Keep in mind that glob is NOT regex!
+  automaticallyRedactForReasons:
+    - "spam"
+    - "advertising"
+
+  # Whether or not to add all joined rooms to the "protected rooms" list
+  # (excluding the management room and watched policy list rooms, see below).
+  #
+  # Note that this effectively makes the protectedRooms and associated commands useless
+  # for regular rooms.
+  #
+  # Note: the management room is *excluded* from this condition.
+  # Explicitly add it as a protected room to protect it.
+  #
+  # Note: Ban list rooms the bot is watching but didn't create will not be protected.
+  # Explicitly add these rooms as a protected room list if you want them protected.
+  protectAllJoinedRooms: false
+
+  # Increase this delay to have Draupnir wait longer between two consecutive backgrounded
+  # operations. The total duration of operations will be longer, but the homeserver won't
+  # be affected as much. Conversely, decrease this delay to have Draupnir chain operations
+  # faster. The total duration of operations will generally be shorter, but the performance
+  # of the homeserver may be more impacted.
+  backgroundDelayMS: 500
+
+  # Server administration commands, these commands will only work if Draupnir is
+  # a global server administrator, and the bot's server is a Synapse instance.
+  admin:
+    # Whether or not Draupnir can temporarily take control of any eligible account from the local homeserver who's in the room
+    # (with enough permissions) to "make" a user an admin.
+    #
+    # This only works if a local user with enough admin permissions is present in the room.
+    enableMakeRoomAdminCommand: false
+
+  # Misc options for command handling and commands
+  commands:
+    # Whether or not the `!draupnir` prefix is necessary to submit commands.
+    #
+    # If `true`, will allow commands like `!ban`, `!help`, etc.
+    #
+    # Note: Draupnir can also be pinged by display name instead of having to use
+    # the !draupnir prefix. For example, "my_moderator_bot: ban @spammer:example.org"
+    # will address only my_moderator_bot.
+    allowNoPrefix: false
+
+    # Any additional bot prefixes that Draupnir will listen to. i.e. adding `mod` will allow `!mod help`.
+    additionalPrefixes:
+      - "draupnir"
+
+    # The default reasons to be prompted with if the reason is missing from a ban command.
+    ban:
+      defaultReasons:
+        - "spam"
+        - "brigading"
+        - "harassment"
+        - "disagreement"
+
+  # Configuration specific to certain toggle-able protections
+  protections:
+    # Configuration for the wordlist plugin, which can ban users based if they say certain
+    # blocked words shortly after joining.
+    wordlist:
+      # A list of case-insensitive keywords that the WordList protection will watch for from new users.
+      #
+      # WordList will ban users who use these words when first joining a room, so take caution when selecting them.
+      #
+      # The word list protection does not support regular expressions at this time.
+      # The configuration in the past stated support for Regex erroneously.
+      #
+      words:
+        - "LoReM"
+        - "IpSuM"
+        - "DoLoR"
+        - "aMeT"
+
+      # For how long (in minutes) the user is "new" to the WordList plugin.
+      #
+      # After this time, the user will no longer be banned for using a word in the above wordlist.
+      #
+      # Set to zero to disable the timeout and make users *always* appear "new".
+      # (users will always be banned if they say a bad word)
+      minutesBeforeTrusting: 20
+
+  # The room state backing store writes a copy of the room state for all protected
+  # rooms to the data directory.
+  # It is recommended to enable this option unless you deploy Draupnir close to the
+  # homeserver and know that Draupnir is starting up quickly. If your homeserver can
+  # respond quickly to Draupnir's requests for `/state` then you might not need this option.
+  roomStateBackingStore:
+    enabled: true
+
+  # Safe mode provides recovery options for some failure modes when Draupnir
+  # fails to start. For example, if the bot fails to resolve a room alias in
+  # a watched list, or if the server has parted from a protected room and can't
+  # find a way back in. Safe mode will provide different options to recover from
+  # these. Such as unprotecting the room or unwatching the policy list.
+  # By default Draupnir will boot into safe mode only when the failure mode
+  # is recoverable.
+  # It may be desirable to prevent the bot from starting into safe mode if you have
+  # a pager system when Draupnir is down, as Draupnir could prevent your monitoring
+  # system from identifying a failure to start.
+  #safeMode:
+  #  # The option for entering safe mode when Draupnir fails to start up.
+  #  # - "RecoveryOnly" will only start the bot in safe mode when there are recovery options available. This is the default.
+  #  # - "Never" will never start the bot in safe mode when Draupnir fails to start normally.
+  #  # - "Always" will always start the bot in safe mode when Draupnir fails to start normally.
+  #  bootOption: RecoveryOnly
+
+  # Options for advanced monitoring of the health of the bot.
+  health:
+    # healthz options. These options are best for use in container environments
+    # like Kubernetes to detect how healthy the service is. The bot will report
+    # that it is unhealthy until it is able to process user requests. Typically
+    # this means that it'll flag itself as unhealthy for a number of minutes
+    # before saying "Now monitoring rooms" and flagging itself healthy.
+    #
+    # Health is flagged through HTTP status codes, defined below.
+    healthz:
+      # Whether the healthz integration should be enabled (default false)
+      enabled: false
+
+      # The port to expose the webserver on. Defaults to 8080.
+      port: 8080
+
+      # The address to listen for requests on. Defaults to all addresses.
+      address: "0.0.0.0"
+
+      # The path to expose the monitoring endpoint at. Defaults to `/healthz`
+      endpoint: "/healthz"
+
+      # The HTTP status code which reports that the bot is healthy/ready to
+      # process requests. Typically this should not be changed. Defaults to
+      # 200.
+      healthyStatus: 200
+
+      # The HTTP status code which reports that the bot is not healthy/ready.
+      # Defaults to 418.
+      unhealthyStatus: 418
+
+    # Sentry options. Sentry is a tool used to receive/collate/triage runtime
+    # errors and performance issues. Skip this section if you do not wish to use
+    # Sentry.
+    sentry:
+      # The key used to upload Sentry data to the server.
+      # dsn: "https://XXXXXXXXX@example.com/YYY
+
+      # Frequency of performance monitoring.
+      # A number in [0.0, 1.0], where 0.0 means "don't bother with tracing"
+      # and 1.0 means "trace performance at every opportunity".
+      # tracesSampleRate: 0.5
+
+  # Options for exposing web APIs.
+  web:
+    # Whether to enable web APIs.
+    enabled: false
+
+    # The port to expose the webserver on. Defaults to 8080.
+    port: 8080
+
+    # The address to listen for requests on. Defaults to only the current
+    # computer.
+    address: localhost
+
+    # Alternative setting to open to the entire web. Be careful,
+    # as this will increase your security perimeter:
+    #
+    #  address: "0.0.0.0"
+
+    # A web API designed to intercept Matrix API
+    # POST /_matrix/client/r0/rooms/{roomId}/report/{eventId}
+    # and display readable abuse reports in the moderation room.
+    #
+    # If you wish to take advantage of this feature, you will need
+    # to configure a reverse proxy, see e.g. test/nginx.conf
+    abuseReporting:
+      # Whether to enable this feature.
+      enabled: false
+
+  # Whether or not to actively poll synapse for abuse reports, to be used
+  # instead of intercepting client calls to synapse's abuse endpoint, when that
+  # isn't possible/practical.
+  pollReports: false
+
+  # Whether or not new reports, received either by webapi or polling,
+  # should be printed to our managementRoom.
+  displayReports: true

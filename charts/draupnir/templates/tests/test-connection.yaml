@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "draupnir.fullname" . }}-test-connection"
+  labels:
+    {{- include "draupnir.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "draupnir.fullname" . }}:8080/health']
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+            drop:
+                - ALL
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+  restartPolicy: Never
