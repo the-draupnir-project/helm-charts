@@ -88,7 +88,7 @@ spec:
         {{- if .Values.persistence.enabled -}}
         - name: storage
           persistentVolumeClaim:
-            claimName: {{ include "draupnir.fullname" . }}-pvc      
+            claimName: {{ include "draupnir.fullname" . }}-pvc
         {{- end }}
         - name: tmp
           emptyDir:
