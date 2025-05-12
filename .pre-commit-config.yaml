@@ -12,6 +12,7 @@ repos:
         exclude_types: [svg]
       - id: end-of-file-fixer
       - id: check-yaml
+        exclude: ^charts/(draupnir|draupnir-appservice)/templates/
       - id: check-added-large-files
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
     rev: "3.2.1"
